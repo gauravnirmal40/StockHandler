@@ -1,0 +1,71 @@
+# macro_regimes.yaml
+# ─────────────────────────────────────────────────────────────
+#  Define macro regimes for labeling historical data.
+#  Each regime has a date range, a label, and the key
+#  macro drivers that characterized it.
+#  These labels get joined to historical market data
+#  so the ML model learns regime-specific squeeze patterns.
+# ─────────────────────────────────────────────────────────────
+
+regimes:
+
+  - name: "low_rate_bull"
+    label: 0
+    start: "2020-04-01"
+    end: "2021-12-31"
+    description: "Post-covid recovery, near-zero rates, retail mania"
+    characteristics:
+      fed_stance: dovish
+      vix_range: low        # VIX typically 15-25
+      yield_10y: low        # below 2%
+      credit_spread: tight
+      squeeze_frequency: very_high   # meme stock era
+
+  - name: "rate_hike_cycle"
+    label: 1
+    start: "2022-01-01"
+    end: "2023-06-30"
+    description: "Aggressive Fed tightening, multiple compression"
+    characteristics:
+      fed_stance: hawkish
+      vix_range: elevated   # VIX 20-40
+      yield_10y: rising     # 1.5% to 5%
+      credit_spread: widening
+      squeeze_frequency: low   # shorts winning, momentum down
+
+  - name: "pause_pivot_watch"
+    label: 2
+    start: "2023-07-01"
+    end: "2024-03-31"
+    description: "Rate plateau, soft landing narrative, AI hype"
+    characteristics:
+      fed_stance: neutral
+      vix_range: low        # VIX back to 12-18
+      yield_10y: stable     # around 4-5%
+      credit_spread: tightening
+      squeeze_frequency: moderate
+
+  - name: "current"
+    label: 3
+    start: "2024-04-01"
+    end: null               # ongoing
+    description: "Election year uncertainty, AI bubble concerns"
+    characteristics:
+      fed_stance: cutting
+      vix_range: variable
+      yield_10y: declining
+      credit_spread: mixed
+      squeeze_frequency: moderate_high
+
+# ─────────────────────────────────────────────────────────────
+#  Squeeze definition thresholds (used for labeling)
+#  A historical date is labeled as a "squeeze setup" if:
+#  - Short interest > si_threshold (% of float)
+#  - AND price moved > price_move_pct within next N days
+#  - OR short interest dropped > si_drop_pct (covering)
+# ─────────────────────────────────────────────────────────────
+squeeze_label_thresholds:
+  si_threshold: 15          # short interest % of float
+  price_move_pct: 20        # % price move in prediction window
+  si_drop_pct: 25           # % drop in SI = covering signal
+  volume_spike_ratio: 2.5   # volume vs 30-day avg
