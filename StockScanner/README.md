@@ -1,10 +1,19 @@
 # Short Squeeze Scanner
 ### Personal watchlist monitor for short-selling setups
 
-A personal trading tool I've been building to monitor short squeeze risk across my
-watchlist — combining market data, Reddit/news sentiment, and macro context into a
-single ML-based signal. Not finished. Always adding stuff.
+Short Squeeze Scanner is a lightweight market signal tool that identifies potential short squeeze setups by combining price action, short interest data, and sentiment signals into a single ranked risk score.
 
+It is designed as a rapid MVP system for detecting asymmetric market risk opportunities, not a trading bot or production financial system.
+
+# Problem
+
+Short squeeze setups are typically identified late because signal sources are fragmented:
+
+short interest data (delayed / incomplete)
+social sentiment (noisy)
+price/volume movement (reactive)
+
+This makes it hard to quickly evaluate whether a stock is entering a high-risk squeeze environment.
 ---
 
 ## What it does
@@ -14,19 +23,19 @@ single ML-based signal. Not finished. Always adding stuff.
 - Labels historical data by macro regime (rate hike cycle, bull run, etc.)
 - Trains an XGBoost classifier on past squeeze setups to predict new ones
 - Generates a bear case writeup per ticker using Claude API
-- Shows everything on a dark Streamlit dashboard
+- Shows everything on a Streamlit dashboard
 
 ---
 
 ## What you need (inputs)
 
 ### 1. API Keys (add to `.env`)
-| Key | Where to get it | Cost |
+| Key | Where to get it |
 |-----|----------------|------|
-| `ANTHROPIC_API_KEY` | console.anthropic.com | ~$0.01/ticker |
-| `REDDIT_CLIENT_ID` + `SECRET` | reddit.com/prefs/apps | Free |
-| `FRED_API_KEY` | fred.stlouisfed.org/docs/api | Free |
-| `ALERT_EMAIL` + password | Gmail app password | Free |
+| `ANTHROPIC_API_KEY` | console.anthropic.com |
+| `REDDIT_CLIENT_ID` + `SECRET` | reddit.com/prefs/apps  |
+| `FRED_API_KEY` | fred.stlouisfed.org/docs/api |
+| `ALERT_EMAIL` + password | Gmail app password |
 
 ### 2. Your watchlist (`data/watchlist.csv`)
 Edit this file to add/remove tickers you actually follow. Columns:
@@ -36,7 +45,20 @@ Edit this file to add/remove tickers you actually follow. Columns:
 - `short_thesis` — your bear thesis (shows in dashboard)
 - `date_added` — when you started tracking it
 
-### 3. Macro regimes (`data/macro_regimes.yaml`)
+### 3. Architecture
+Market Data (price, short interest)
+            ↓
+Sentiment Layer (Reddit + news)
+            ↓
+Feature Engineering (signals extraction)
+            ↓
+Risk Scoring Model (XGBoost classifier)
+            ↓
+Signal Aggregation Engine
+            ↓
+Output Layer (CLI / Streamlit dashboard)
+
+### 4. Macro regimes (`data/macro_regimes.yaml`)
 Already configured with 4 regimes from 2020-present.
 You can add new ones or adjust the date ranges.
 
@@ -85,36 +107,25 @@ python run_scanner.py --ticker GME
 # Skip AI bear cases (faster)
 python run_scanner.py --no-ai
 ```
+## Tech Stack
+Python
+Pandas / NumPy
+XGBoost (classification model)
+Streamlit (dashboard)
+Reddit API + news scraping
+Yahoo Finance / Finviz data sources
 
----
+## What Makes This Different
 
-## File structure
+Most tools either:
 
-```
-squeeze_scanner/
-├── dashboard.py              ← Streamlit UI
-├── run_scanner.py            ← Daily scan orchestrator
-├── train_model.py            ← ML model training
-├── build_training_data.py    ← Historical data builder
-├── bear_case_writer.py       ← Claude API integration
-├── requirements.txt
-├── .env.template
-│
-├── data/
-│   ├── watchlist.csv         ← YOUR tickers (edit this)
-│   ├── macro_regimes.yaml    ← Macro context config
-│   └── squeeze_scanner.db    ← SQLite DB (auto-created)
-│
-├── models/
-│   └── squeeze_model.pkl     ← Trained model (auto-created)
-│
-└── utils/
-    ├── db.py                 ← Database schema + helpers
-    ├── fetcher.py            ← Market data + Finviz scraper
-    └── sentiment.py          ← Reddit + news sentiment
-```
+track sentiment only
+or track price only
+or over-engineer ML without interpretability
 
----
+This system focuses on:
+
+combining weak signals into one interpretable risk layer
 
 ## Things I still want to add
 
