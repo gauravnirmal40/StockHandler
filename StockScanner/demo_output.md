@@ -2,7 +2,8 @@
 
 The dashboard aggregates market, sentiment, and short interest signals into a single ranked view.
 
-![Squeeze Scanner Dashboard](assets/dashboard_demo.png)
+![Squeeze Scanner Dashboard](assets/dashboard1.png)
+![Squeeze Scanner Dashboard](assets/dashboard2.png)
 
 
 ### Interpretation
