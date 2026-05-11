@@ -1,131 +1,114 @@
 # Short Squeeze Scanner
-### Personal watchlist monitor for short-selling setups
+# 📌 Squeeze Risk Signal Engine
 
-Short Squeeze Scanner is a lightweight market signal tool that identifies potential short squeeze setups by combining price action, short interest data, and sentiment signals into a single ranked risk score.
+## Overview
+Squeeze Risk Signal Engine is a lightweight decision system that identifies potential short squeeze setups by converting fragmented market signals into a single ranked risk output.
 
-It is designed as a rapid MVP system for detecting asymmetric market risk opportunities, not a trading bot or production financial system.
-
-# Problem
-
-Short squeeze setups are typically identified late because signal sources are fragmented:
-
-short interest data (delayed / incomplete)
-social sentiment (noisy)
-price/volume movement (reactive)
-
-This makes it hard to quickly evaluate whether a stock is entering a high-risk squeeze environment.
----
-
-## What it does
-
-- Tracks short interest %, borrow rate, and volume spikes via Yahoo Finance + Finviz
-- Pulls Reddit (WSB, r/stocks, r/shortsqueeze) and news headline sentiment daily
-- Labels historical data by macro regime (rate hike cycle, bull run, etc.)
-- Trains an XGBoost classifier on past squeeze setups to predict new ones
-- Generates a bear case writeup per ticker using Claude API
-- Shows everything on a Streamlit dashboard
+It is designed as a **fast MVP tool for evaluating asymmetric market risk**, not a trading bot or production financial system.
 
 ---
 
-## What you need (inputs)
+## 🎯 Problem
+Short squeeze opportunities are difficult to detect early because key signals are scattered across:
+- price and volume movement
+- short interest data
+- social sentiment noise
 
-### 1. API Keys (add to `.env`)
-| Key | Where to get it |
-|-----|----------------|------|
-| `ANTHROPIC_API_KEY` | console.anthropic.com |
-| `REDDIT_CLIENT_ID` + `SECRET` | reddit.com/prefs/apps  |
-| `FRED_API_KEY` | fred.stlouisfed.org/docs/api |
-| `ALERT_EMAIL` + password | Gmail app password |
-
-### 2. Your watchlist (`data/watchlist.csv`)
-Edit this file to add/remove tickers you actually follow. Columns:
-- `ticker` — stock symbol
-- `sector` — for your own reference
-- `why_watching` — personal note
-- `short_thesis` — your bear thesis (shows in dashboard)
-- `date_added` — when you started tracking it
-
-### 3. Architecture
-Market Data (price, short interest)
-            ↓
-Sentiment Layer (Reddit + news)
-            ↓
-Feature Engineering (signals extraction)
-            ↓
-Risk Scoring Model (XGBoost classifier)
-            ↓
-Signal Aggregation Engine
-            ↓
-Output Layer (CLI / Streamlit dashboard)
-
-### 4. Macro regimes (`data/macro_regimes.yaml`)
-Already configured with 4 regimes from 2020-present.
-You can add new ones or adjust the date ranges.
+Individually, these signals are weak. Together, they can indicate early-stage squeeze conditions—but are difficult to interpret in real time.
 
 ---
 
-## Setup
+## 💡 Solution
+This system aggregates multiple weak signals into a **single interpretable risk score per stock**, enabling fast identification of potential squeeze setups.
+
+Instead of analyzing raw data, users get a **ranked list of opportunities with explanations**.
+
+---
+
+## 🔄 System Workflow
+
+Watchlist Input  
+↓  
+Market Data Collection (price, volume, short interest)  
+↓  
+Sentiment Signals (Reddit + news context)  
+↓  
+Feature Extraction (signal indicators)  
+↓  
+Risk Scoring Model (ML-based classification)  
+↓  
+Signal Aggregation Engine  
+↓  
+Ranked Squeeze Risk Output  
+
+---
+
+## 📊 Output Example
+
+The system generates a ranked view of stocks based on squeeze probability.
+
+### Live Dashboard Output
+
+![Squeeze Risk Dashboard](assets/dashboard1.png)
+![Squeeze Risk Dashboard](assets/dashboard2.png)
+
+### Interpretation
+
+- **GME → High Risk**  
+  Strong borrow rate + volume spike + elevated retail sentiment
+
+- **AMC → Medium Risk**  
+  Mixed signals with weak confirmation from price action
+
+- **AAPL → Low Risk**  
+  Stable fundamentals, no squeeze indicators detected
+
+---
+
+## 🧠 What the System Produces
+
+Each scan outputs:
+- Ranked list of stocks by squeeze risk
+- Risk level classification (High / Medium / Low)
+- Explanation of contributing signals per stock
+
+The goal is not raw prediction accuracy, but **fast interpretability under uncertainty**.
+
+---
+
+## 🧱 Design Principles
+
+- Signal compression over data complexity  
+- Interpretability over black-box prediction  
+- Fast MVP iteration over production robustness  
+- Single clear output over multiple dashboards  
+
+---
+
+## ⚙️ Tech Stack
+
+- Python  
+- Pandas / NumPy  
+- XGBoost (risk classification model)  
+- Streamlit (dashboard UI)  
+- Reddit API + news scraping  
+- Yahoo Finance / market data sources  
+
+---
+
+## 🚀 How to Run
 
 ```bash
-# Clone / navigate to project folder
-cd squeeze_scanner
-
-# Install dependencies
 pip install -r requirements.txt
 
-# Copy and fill in your API keys
-cp .env.template .env
-# Edit .env with your keys
-
-# Initialize the database
-python utils/db.py
-
-# Build historical training data (takes ~20-40 mins)
-python build_training_data.py --period 2y
-
-# Train the model
-python train_model.py
-
-# Run a scan
+# Run full pipeline
 python run_scanner.py
 
-# Launch the dashboard
+# Launch dashboard
 streamlit run dashboard.py
-```
 
----
-
-## Daily usage
-
-```bash
-# Quick scan + open dashboard
-python run_scanner.py && streamlit run dashboard.py
-
-# Single ticker
+# Scan a single ticker
 python run_scanner.py --ticker GME
-
-# Skip AI bear cases (faster)
-python run_scanner.py --no-ai
-```
-## Tech Stack
-Python
-Pandas / NumPy
-XGBoost (classification model)
-Streamlit (dashboard)
-Reddit API + news scraping
-Yahoo Finance / Finviz data sources
-
-## What Makes This Different
-
-Most tools either:
-
-track sentiment only
-or track price only
-or over-engineer ML without interpretability
-
-This system focuses on:
-
-combining weak signals into one interpretable risk layer
 
 ## Things I still want to add
 
